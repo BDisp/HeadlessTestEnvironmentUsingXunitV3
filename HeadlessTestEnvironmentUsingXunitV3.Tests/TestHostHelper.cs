@@ -119,8 +119,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                             try
                             {
                                 using ManagementObjectSearcher searcher =
-                                    new(
-                                        $"SELECT ParentProcessId FROM Win32_Process WHERE ProcessId = {pid}");
+                                    new($"SELECT ParentProcessId FROM Win32_Process WHERE ProcessId = {pid}");
                                 foreach (ManagementBaseObject mbo in searcher.Get())
                                 {
                                     parentId = Convert.ToInt32(mbo["ParentProcessId"]);
@@ -133,7 +132,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                             }
                         }
 #endif
-                        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                        if (parentId == 0 && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                         {
                             try
                             {
