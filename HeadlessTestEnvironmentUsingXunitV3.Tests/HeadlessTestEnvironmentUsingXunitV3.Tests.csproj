@@ -24,6 +24,11 @@
     <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
 
+  <!-- Define a WINDOWS compilation symbol when building on Windows so code can be conditionally compiled -->
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <DefineConstants>WINDOWS;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\HeadlessTestEnvironmentUsingXunitV3\HeadlessTestEnvironmentUsingXunitV3.csproj" />
   </ItemGroup>

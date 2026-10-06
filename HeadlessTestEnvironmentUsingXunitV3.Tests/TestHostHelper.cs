@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
+#if WINDOWS
 using System.Management;
+#endif
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -111,6 +113,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                     {
                         int parentId = 0;
 
+#if WINDOWS
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
                             try
@@ -129,6 +132,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                                 break;
                             }
                         }
+#endif
                         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                         {
                             try
