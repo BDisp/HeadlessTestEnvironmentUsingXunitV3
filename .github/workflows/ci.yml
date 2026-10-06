@@ -15,13 +15,12 @@ jobs:
         os: [windows-latest, ubuntu-latest, macos-latest]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Setup .NET SDK (use .NET 10 preview if required)
-        uses: actions/setup-dotnet@v3
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
-          include-prerelease: false
 
       - name: Display dotnet information
         run: dotnet --info
