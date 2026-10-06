@@ -34,3 +34,21 @@ jobs:
 
       - name: Run unit tests
         run: dotnet test HeadlessTestEnvironmentUsingXunitV3.Tests/HeadlessTestEnvironmentUsingXunitV3.Tests.csproj -c Release --verbosity normal
+
+      - name: Print diagnostic files
+        if: always()
+        shell: pwsh
+        run: |
+          $diagnosticDirectory = "HeadlessTestEnvironmentUsingXunitV3.Tests/bin/Release/net10.0"
+          $diagnosticFiles = Get-ChildItem -Path $diagnosticDirectory -Filter "Diagnostic_PrintProcessInfo_*.txt" -File -ErrorAction SilentlyContinue
+
+          if (-not $diagnosticFiles) {
+            Write-Host "No diagnostic files found in $diagnosticDirectory"
+            exit 0
+          }
+
+          foreach ($file in $diagnosticFiles) {
+            Write-Host "::group::Contents of $($file.Name)"
+            Get-Content -LiteralPath $file.FullName
+            Write-Host "::endgroup::"
+          }
