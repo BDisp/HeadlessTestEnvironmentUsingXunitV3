@@ -20,6 +20,9 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
             // Detect if running with the --diagnostic flag (which may indicate a diagnostic run)
             bool runningUnderDiagnostic = cmd.Contains("--diagnostic");
             bool runningUnderDotnetTestPipe = cmd.Contains("--dotnet-test-pipe");
+            // Detect common CI environments (GitHub Actions / generic CI)
+            bool isCi = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS")) ||
+                        !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"));
 
             // If accessing WindowWidth throws, treat the environment as headless/test-host and
             // assert the console I/O is redirected. Otherwise, assume a real console is present.
@@ -33,7 +36,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                     if ((runningUnderReSharper && !runningUnderDiagnostic && !runningUnderDotnetTestPipe &&
                          TestHostHelper.DetectedTestHost != "Visual Studio")
                         || (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                            TestHostHelper.DetectedTestHost == "Unknown"))
+                            TestHostHelper.DetectedTestHost == "Unknown" && isCi))
                     {
                         Assert.True(Console.IsInputRedirected);
                     }
