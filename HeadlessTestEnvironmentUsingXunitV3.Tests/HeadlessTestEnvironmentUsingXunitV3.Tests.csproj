@@ -16,12 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.1" />
+	  <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+	  <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0" />
+	  <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.1" />
   </ItemGroup>
 
   <!-- System.Management is Windows-only; reference it when building on Windows so WMI-based parent process lookup compiles -->
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <PackageReference Include="System.Management" Version="8.0.0" />
+    <PackageReference Include="System.Management" Version="10.0.12" />
   </ItemGroup>
 
   <!-- Define a WINDOWS compilation symbol when building on Windows so code can be conditionally compiled -->
