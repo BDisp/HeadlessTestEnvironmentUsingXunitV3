@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="global.json" />
+    <File Path="testEnvironments.json" />
+  </Folder>
+  <Folder Name="/Solution Items/GitHub/">
+    <File Path=".github/workflows/ci.yml" />
+  </Folder>
+  <Project Path="HeadlessTestEnvironmentUsingXunitV3.Demo/HeadlessTestEnvironmentUsingXunitV3.Demo.csproj" />
+  <Project Path="HeadlessTestEnvironmentUsingXunitV3.Tests/HeadlessTestEnvironmentUsingXunitV3.Tests.csproj" />
+  <Project Path="HeadlessTestEnvironmentUsingXunitV3/HeadlessTestEnvironmentUsingXunitV3.csproj" />
+</Solution>
