@@ -32,9 +32,10 @@ jobs:
       - name: Build solution
         run: dotnet build HeadlessTestEnvironmentUsingXunitV3.slnx -c Release --no-restore
 
-      - name: Run unit tests
+      - name: Run unit tests (build + test the test project)
         run: |
-          dotnet test HeadlessTestEnvironmentUsingXunitV3.slnx -c Release --no-build --verbosity normal \
+          # Run tests for the test project directly and allow dotnet test to build/restore as needed.
+          dotnet test HeadlessTestEnvironmentUsingXunitV3.Tests/HeadlessTestEnvironmentUsingXunitV3.Tests.csproj -c Release --verbosity normal \
             --logger "trx;LogFileName=test_results_${{ matrix.os }}.trx" --results-directory ./TestResults
 
       - name: Upload test results
