@@ -15,13 +15,12 @@ jobs:
         os: [windows-latest, ubuntu-latest, macos-latest]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Setup .NET SDK (use .NET 10 preview if required)
-        uses: actions/setup-dotnet@v3
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
-          include-prerelease: false
 
       - name: Display dotnet information
         run: dotnet --info
@@ -32,15 +31,23 @@ jobs:
       - name: Build solution
         run: dotnet build HeadlessTestEnvironmentUsingXunitV3.slnx -c Release --no-restore
 
-      - name: Run unit tests (build + test the test project)
-        run: |
-          # Run tests for the test project directly and allow dotnet test to build/restore as needed.
-          dotnet test HeadlessTestEnvironmentUsingXunitV3.Tests/HeadlessTestEnvironmentUsingXunitV3.Tests.csproj -c Release --verbosity normal \
-            --logger "trx;LogFileName=test_results_${{ matrix.os }}.trx" --results-directory ./TestResults
+      - name: Run unit tests
+        run: dotnet test HeadlessTestEnvironmentUsingXunitV3.Tests/HeadlessTestEnvironmentUsingXunitV3.Tests.csproj -c Release --verbosity normal
 
-      - name: Upload test results
+      - name: Print diagnostic files
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ matrix.os }}
-          path: TestResults
+        shell: pwsh
+        run: |
+          $diagnosticDirectory = "HeadlessTestEnvironmentUsingXunitV3.Tests/bin/Release/net10.0"
+          $diagnosticFiles = Get-ChildItem -Path $diagnosticDirectory -Filter "Diagnostic_PrintProcessInfo_*.txt" -File -ErrorAction SilentlyContinue
+
+          if (-not $diagnosticFiles) {
+            Write-Host "No diagnostic files found in $diagnosticDirectory"
+            exit 0
+          }
+
+          foreach ($file in $diagnosticFiles) {
+            Write-Host "::group::Contents of $($file.Name)"
+            Get-Content -LiteralPath $file.FullName
+            Write-Host "::endgroup::"
+          }

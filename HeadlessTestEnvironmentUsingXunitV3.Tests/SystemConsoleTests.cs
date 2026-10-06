@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace HeadlessTestEnvironmentUsingXunitV3.Tests
 {
@@ -29,8 +30,10 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                 Assert.True(Console.IsErrorRedirected);
                 if (isAttachedToDebugger || !runningUnderReSharper)
                 {
-                    if (runningUnderReSharper && !runningUnderDiagnostic && !runningUnderDotnetTestPipe &&
-                        TestHostHelper.DetectedTestHost != "Visual Studio")
+                    if ((runningUnderReSharper && !runningUnderDiagnostic && !runningUnderDotnetTestPipe &&
+                         TestHostHelper.DetectedTestHost != "Visual Studio")
+                        || (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                            TestHostHelper.DetectedTestHost == "Unknown"))
                     {
                         Assert.True(Console.IsInputRedirected);
                     }
