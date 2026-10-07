@@ -75,11 +75,11 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
             {
                 // Non-Windows platforms (Linux, macOS, etc.) share the same logic
                 bool expectException = TestHostHelper.DetectedTestHost != "VS Code (TERM_PROGRAM)" &&
-                                       (runningUnderDiagnostic || runningUnderDotnetTestPipe || isCi ||
+                                       (runningUnderDiagnostic || runningUnderDotnetTestPipe ||
                                         runningUnderReSharper);
                 Console.WriteLine($"expectException: {expectException}");
                 Console.WriteLine($"DetectedTestHost: {TestHostHelper.DetectedTestHost}");
-                if (expectException && !runningUnderReSharper)
+                if (expectException && !runningUnderReSharper && !isCi)
                 {
                     Assert.NotNull(exception);
                     Assert.True(Console.IsOutputRedirected);
@@ -90,7 +90,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                 {
                     Assert.Null(exception);
                     if ((isAttachedToDebugger && !runningUnderReSharper)
-                        || TestHostHelper.DetectedTestHost == "VS Code (TERM_PROGRAM)")
+                        || TestHostHelper.DetectedTestHost == "VS Code (TERM_PROGRAM)" && !runningUnderDotnetTestPipe)
                     {
                         Assert.False(Console.IsOutputRedirected);
                         Assert.False(Console.IsErrorRedirected);
@@ -100,7 +100,14 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                     {
                         Assert.True(Console.IsOutputRedirected);
                         Assert.True(Console.IsErrorRedirected);
-                        Assert.True(Console.IsInputRedirected);
+                        if (runningUnderDotnetTestPipe)
+                        {
+                            Assert.False(Console.IsInputRedirected);
+                        }
+                        else
+                        {
+                            Assert.True(Console.IsInputRedirected);
+                        }
                     }
                 }
             }
