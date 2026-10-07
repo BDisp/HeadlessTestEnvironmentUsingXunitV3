@@ -24,19 +24,37 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
             bool isCi = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS")) ||
                         !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"));
 
-            // If accessing WindowWidth throws, treat the environment as headless/test-host and
-            // assert the console I/O is redirected. Otherwise, assume a real console is present.
-            if (exception != null)
+            // Platform-aware expectations: Linux and macOS share behavior; Windows may differ.
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                Assert.NotNull(exception);
-                Assert.True(Console.IsOutputRedirected);
-                Assert.True(Console.IsErrorRedirected);
-                if (isAttachedToDebugger || !runningUnderReSharper)
+                // Windows: decide expected exception based on command-line indicators, debugger, ReSharper, and CI
+                bool expectException;
+                if (runningUnderReSharper)
                 {
-                    if ((runningUnderReSharper && !runningUnderDiagnostic && !runningUnderDotnetTestPipe &&
-                         TestHostHelper.DetectedTestHost != "Visual Studio")
-                        || (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                            TestHostHelper.DetectedTestHost == "Unknown" && isCi))
+                    expectException = true;
+                }
+                else if (isAttachedToDebugger)
+                {
+                    expectException = false;
+                }
+                else if (runningUnderDiagnostic || runningUnderDotnetTestPipe || isCi)
+                {
+                    expectException = true;
+                }
+                else
+                {
+                    expectException = false;
+                }
+
+                if (expectException || runningUnderReSharper)
+                {
+                    Assert.NotNull(exception);
+                    Assert.True(Console.IsOutputRedirected);
+                    Assert.True(Console.IsErrorRedirected);
+                    if ((!isAttachedToDebugger && runningUnderReSharper)
+                        || (isAttachedToDebugger && runningUnderReSharper &&
+                            TestHostHelper.DetectedTestHost == "VS Code (VSCODE_PID)")
+                        || isCi)
                     {
                         Assert.True(Console.IsInputRedirected);
                     }
@@ -47,19 +65,32 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                 }
                 else
                 {
-                    if (runningUnderReSharper)
-                    {
-                        Assert.True(Console.IsInputRedirected);
-                    }
-                    else
-                    {
-                        Assert.False(Console.IsInputRedirected);
-                    }
+                    Assert.Null(exception);
+                    Assert.False(Console.IsOutputRedirected);
+                    Assert.False(Console.IsErrorRedirected);
+                    Assert.False(Console.IsInputRedirected);
                 }
             }
             else
             {
-                Assert.Null(exception);
+                // Non-Windows platforms (Linux, macOS, etc.) share the same logic
+                bool expectException = runningUnderDiagnostic || runningUnderDotnetTestPipe || isCi ||
+                                       runningUnderReSharper;
+
+                if (expectException)
+                {
+                    Assert.NotNull(exception);
+                    Assert.True(Console.IsOutputRedirected);
+                    Assert.True(Console.IsErrorRedirected);
+                    Assert.True(Console.IsInputRedirected);
+                }
+                else
+                {
+                    Assert.Null(exception);
+                    Assert.False(Console.IsOutputRedirected);
+                    Assert.False(Console.IsErrorRedirected);
+                    Assert.False(Console.IsInputRedirected);
+                }
             }
         }
     }
