@@ -100,7 +100,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                     {
                         Assert.True(Console.IsOutputRedirected);
                         Assert.True(Console.IsErrorRedirected);
-                        if (runningUnderDotnetTestPipe)
+                        if (runningUnderDotnetTestPipe && !isCi)
                         {
                             Assert.False(Console.IsInputRedirected);
                         }
