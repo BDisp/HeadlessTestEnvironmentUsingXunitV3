@@ -43,28 +43,29 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
             DetectedTestHost = DetectTestHost();
             // DetectedTestHost contains WSL when appropriate
             Console.WriteLine("Detected Test Host: " + DetectedTestHost);
+            Console.WriteLine("IsWsl: " + IsWsl);
 
             // Also persist the same diagnostics to files so any test host can be inspected.
             try
             {
-                string[] lines = new[]
-                {
+                string[] lines =
+                [
                     "Process exe: " + ProcessExe, "Assembly location: " + AssemblyLocation,
                     "Entry assembly: " + EntryAssembly, "AppDomain BaseDirectory: " + AppDomainBaseDirectory,
                     "Environment.CurrentDirectory: " + EnvironmentCurrentDirectory, "Command line: " + CommandLine,
-                    "Detected Test Host: " + DetectedTestHost
-                };
+                    "Detected Test Host: " + DetectedTestHost, "IsWsl: " + IsWsl
+                ];
 
                 string id = DateTime.UtcNow.ToString("yyyyMMddHHmmss") + "_" + Guid.NewGuid().ToString("N");
 
                 // Candidate locations to write diagnostics where different test hosts will be able to write/read
-                string[] targetDirs = new[]
-                {
+                string[] targetDirs =
+                [
                     AppDomain.CurrentDomain.BaseDirectory
                     //Environment.CurrentDirectory,
                     //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? AppDomain.CurrentDomain.BaseDirectory,
                     //Path.GetTempPath()
-                };
+                ];
 
                 foreach (string dir in targetDirs.Distinct())
                 {
@@ -97,17 +98,6 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
             {
                 try
                 {
-                    // Quick environment checks that common VS Code indicators set in spawned processes
-                    if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("VSCODE_PID")))
-                    {
-                        return "VS Code (VSCODE_PID)";
-                    }
-
-                    if (Environment.GetEnvironmentVariable("TERM_PROGRAM") == "vscode")
-                    {
-                        return "VS Code (TERM_PROGRAM)";
-                    }
-
                     // Robust WSL detection when running on Linux
                     if (OperatingSystem.IsLinux())
                     {
@@ -181,7 +171,6 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                                          mountInfo.IndexOf("\\\\wsl$", StringComparison.OrdinalIgnoreCase) >= 0))
                                     {
                                         IsWsl = true;
-                                        wslDetected = true;
                                     }
                                 }
                             }
@@ -190,6 +179,17 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                                 // ignore and continue with parent-process heuristics
                             }
                         }
+                    }
+
+                    // Quick environment checks that common VS Code indicators set in spawned processes
+                    if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("VSCODE_PID")))
+                    {
+                        return "VS Code (VSCODE_PID)";
+                    }
+
+                    if (Environment.GetEnvironmentVariable("TERM_PROGRAM") == "vscode")
+                    {
+                        return "VS Code (TERM_PROGRAM)";
                     }
 
                     // Walk parent process chain and inspect command lines on each platform

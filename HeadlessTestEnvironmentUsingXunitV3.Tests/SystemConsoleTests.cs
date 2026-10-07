@@ -79,6 +79,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                                         runningUnderReSharper);
                 Console.WriteLine($"expectException: {expectException}");
                 Console.WriteLine($"DetectedTestHost: {TestHostHelper.DetectedTestHost}");
+                Console.WriteLine("IsWsl: " + TestHostHelper.IsWsl);
                 if (expectException && !runningUnderReSharper && !isCi)
                 {
                     Assert.NotNull(exception);
@@ -89,7 +90,8 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                 else
                 {
                     Assert.Null(exception);
-                    if ((isAttachedToDebugger && !runningUnderReSharper && TestHostHelper.DetectedTestHost != "Unknown" && TestHostHelper.IsWsl)
+                    if ((isAttachedToDebugger && !runningUnderReSharper && 
+                         TestHostHelper.DetectedTestHost != "Unknown" && TestHostHelper.IsWsl)
                         || (TestHostHelper.DetectedTestHost == "VS Code (TERM_PROGRAM)" &&
                             TestHostHelper.DetectedTestHost != "Unknown" && TestHostHelper.IsWsl && !runningUnderDotnetTestPipe))
                     {
