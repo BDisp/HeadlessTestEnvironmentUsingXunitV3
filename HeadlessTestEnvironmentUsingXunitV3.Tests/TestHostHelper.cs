@@ -111,7 +111,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                     int pid = Environment.ProcessId;
                     while (true)
                     {
-                        int parentId = 0;
+                        int parentId;
 
 #if WINDOWS
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -132,7 +132,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                             }
                         }
 #endif
-                        if (parentId == 0 && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                         {
                             try
                             {
@@ -266,6 +266,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                 }
                 catch
                 {
+                    // ignored to allow fallback to -1
                 }
 
                 return -1;
@@ -280,6 +281,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                 }
                 catch
                 {
+                    // ignored to allow fallback to null
                 }
 
                 return null;

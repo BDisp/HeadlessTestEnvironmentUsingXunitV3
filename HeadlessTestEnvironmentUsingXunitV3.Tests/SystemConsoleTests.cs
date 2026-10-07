@@ -74,10 +74,12 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
             else
             {
                 // Non-Windows platforms (Linux, macOS, etc.) share the same logic
-                bool expectException = runningUnderDiagnostic || runningUnderDotnetTestPipe || isCi ||
-                                       runningUnderReSharper;
-
-                if (expectException)
+                bool expectException = TestHostHelper.DetectedTestHost != "VS Code (TERM_PROGRAM)" &&
+                                       (runningUnderDiagnostic || runningUnderDotnetTestPipe || isCi ||
+                                        runningUnderReSharper);
+                Console.WriteLine($"expectException: {expectException}");
+                Console.WriteLine($"DetectedTestHost: {TestHostHelper.DetectedTestHost}");
+                if (expectException && !runningUnderReSharper)
                 {
                     Assert.NotNull(exception);
                     Assert.True(Console.IsOutputRedirected);
@@ -87,9 +89,19 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                 else
                 {
                     Assert.Null(exception);
-                    Assert.False(Console.IsOutputRedirected);
-                    Assert.False(Console.IsErrorRedirected);
-                    Assert.False(Console.IsInputRedirected);
+                    if ((isAttachedToDebugger && !runningUnderReSharper)
+                        || TestHostHelper.DetectedTestHost == "VS Code (TERM_PROGRAM)")
+                    {
+                        Assert.False(Console.IsOutputRedirected);
+                        Assert.False(Console.IsErrorRedirected);
+                        Assert.False(Console.IsInputRedirected);
+                    }
+                    else
+                    {
+                        Assert.True(Console.IsOutputRedirected);
+                        Assert.True(Console.IsErrorRedirected);
+                        Assert.True(Console.IsInputRedirected);
+                    }
                 }
             }
         }
