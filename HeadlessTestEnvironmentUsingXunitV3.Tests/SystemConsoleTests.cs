@@ -91,11 +91,12 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                 {
                     Assert.Null(exception);
                     if ((isAttachedToDebugger && !runningUnderReSharper && 
-                         TestHostHelper.DetectedTestHost == "VS Code (VSCODE_PID)" ||
+                         TestHostHelper.DetectedTestHost == "VS Code (VSCODE_PID)" &&
                          TestHostHelper.DetectedTestHost != "Unknown" && TestHostHelper.IsWsl)
                         || TestHostHelper.DetectedTestHost == "VS Code (TERM_PROGRAM)" && !runningUnderDotnetTestPipe
-                        || TestHostHelper.DetectedTestHost != "VS Code (VSCODE_PID)" && !runningUnderDotnetTestPipe
-                        || (TestHostHelper.DetectedTestHost != "Unknown" && TestHostHelper.IsWsl && !runningUnderDotnetTestPipe))
+                        || (TestHostHelper.DetectedTestHost != "VS Code (VSCODE_PID)"
+                        && TestHostHelper.DetectedTestHost != "VS Code"
+                        && TestHostHelper.DetectedTestHost != "Unknown" && TestHostHelper.IsWsl && !runningUnderDotnetTestPipe))
                     {
                         Assert.False(Console.IsOutputRedirected);
                         Assert.False(Console.IsErrorRedirected);
