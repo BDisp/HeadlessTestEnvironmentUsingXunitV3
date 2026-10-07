@@ -74,7 +74,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
             {
                 // Non-Windows platforms (Linux, macOS, etc.) share the same logic
                 bool expectException = TestHostHelper.DetectedTestHost != "VS Code (TERM_PROGRAM)" &&
-                                       TestHostHelper.DetectedTestHost != "WSL" &&
+                                       TestHostHelper.DetectedTestHost != "Unknown" && TestHostHelper.IsWsl &&
                                        (runningUnderDiagnostic || runningUnderDotnetTestPipe ||
                                         runningUnderReSharper);
                 Console.WriteLine($"expectException: {expectException}");
@@ -89,9 +89,9 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                 else
                 {
                     Assert.Null(exception);
-                    if ((isAttachedToDebugger && !runningUnderReSharper && TestHostHelper.DetectedTestHost != "WSL")
+                    if ((isAttachedToDebugger && !runningUnderReSharper && TestHostHelper.DetectedTestHost != "Unknown" && TestHostHelper.IsWsl)
                         || (TestHostHelper.DetectedTestHost == "VS Code (TERM_PROGRAM)" &&
-                            TestHostHelper.DetectedTestHost != "WSL" && !runningUnderDotnetTestPipe))
+                            TestHostHelper.DetectedTestHost != "Unknown" && TestHostHelper.IsWsl && !runningUnderDotnetTestPipe))
                     {
                         Assert.False(Console.IsOutputRedirected);
                         Assert.False(Console.IsErrorRedirected);
@@ -102,7 +102,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                         Assert.True(Console.IsOutputRedirected);
                         Assert.True(Console.IsErrorRedirected);
                         if ((runningUnderDotnetTestPipe && !isCi) ||
-                            (!isAttachedToDebugger && TestHostHelper.DetectedTestHost == "WSL"))
+                            (!isAttachedToDebugger && TestHostHelper.DetectedTestHost == "Unknown" && TestHostHelper.IsWsl))
                         {
                             Assert.False(Console.IsInputRedirected);
                         }

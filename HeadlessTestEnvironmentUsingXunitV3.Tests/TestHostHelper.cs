@@ -17,6 +17,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
         public static string? EnvironmentCurrentDirectory { get; private set; }
         public static string? CommandLine { get; private set; }
         public static string? DetectedTestHost { get; private set; }
+        public static bool IsWsl { get; private set; }
 
         public static void Initialize()
         {
@@ -110,69 +111,84 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                     // Robust WSL detection when running on Linux
                     if (OperatingSystem.IsLinux())
                     {
+                        bool wslDetected = false;
+
                         // 1) Environment variables commonly present in WSL
                         if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WSL_DISTRO_NAME")) ||
                             !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WSL_INTEROP")) ||
                             !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WSLENV")))
                         {
-                            return "WSL";
+                            IsWsl = true;
+                            wslDetected = true;
                         }
 
                         // 2) Kernel/version files containing 'microsoft'
-                        try
+                        if (!wslDetected)
                         {
-                            const string procVersionPath = "/proc/version";
-                            if (File.Exists(procVersionPath))
+                            try
                             {
-                                string ver = File.ReadAllText(procVersionPath);
-                                if (!string.IsNullOrEmpty(ver) &&
-                                    ver.IndexOf("microsoft", StringComparison.OrdinalIgnoreCase) >= 0)
+                                const string procVersionPath = "/proc/version";
+                                if (File.Exists(procVersionPath))
                                 {
-                                    return "WSL";
+                                    string ver = File.ReadAllText(procVersionPath);
+                                    if (!string.IsNullOrEmpty(ver) &&
+                                        ver.IndexOf("microsoft", StringComparison.OrdinalIgnoreCase) >= 0)
+                                    {
+                                        IsWsl = true;
+                                        wslDetected = true;
+                                    }
                                 }
                             }
-                        }
-                        catch
-                        {
-                            // ignore and continue additional checks
+                            catch
+                            {
+                                // ignore and continue additional checks
+                            }
                         }
 
-                        try
+                        if (!wslDetected)
                         {
-                            const string osReleasePath = "/proc/sys/kernel/osrelease";
-                            if (File.Exists(osReleasePath))
+                            try
                             {
-                                string osrel = File.ReadAllText(osReleasePath);
-                                if (!string.IsNullOrEmpty(osrel) &&
-                                    osrel.IndexOf("microsoft", StringComparison.OrdinalIgnoreCase) >= 0)
+                                const string osReleasePath = "/proc/sys/kernel/osrelease";
+                                if (File.Exists(osReleasePath))
                                 {
-                                    return "WSL";
+                                    string osrel = File.ReadAllText(osReleasePath);
+                                    if (!string.IsNullOrEmpty(osrel) &&
+                                        osrel.IndexOf("microsoft", StringComparison.OrdinalIgnoreCase) >= 0)
+                                    {
+                                        IsWsl = true;
+                                        wslDetected = true;
+                                    }
                                 }
                             }
-                        }
-                        catch
-                        {
-                            // ignore and continue additional checks
+                            catch
+                            {
+                                // ignore and continue additional checks
+                            }
                         }
 
                         // 3) Mount info references to WSL
-                        try
+                        if (!wslDetected)
                         {
-                            const string mountInfoPath = "/proc/self/mountinfo";
-                            if (File.Exists(mountInfoPath))
+                            try
                             {
-                                string mountInfo = File.ReadAllText(mountInfoPath);
-                                if (!string.IsNullOrEmpty(mountInfo) &&
-                                    (mountInfo.IndexOf("wsl", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                     mountInfo.IndexOf("\\\\wsl$", StringComparison.OrdinalIgnoreCase) >= 0))
+                                const string mountInfoPath = "/proc/self/mountinfo";
+                                if (File.Exists(mountInfoPath))
                                 {
-                                    return "WSL";
+                                    string mountInfo = File.ReadAllText(mountInfoPath);
+                                    if (!string.IsNullOrEmpty(mountInfo) &&
+                                        (mountInfo.IndexOf("wsl", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                         mountInfo.IndexOf("\\\\wsl$", StringComparison.OrdinalIgnoreCase) >= 0))
+                                    {
+                                        IsWsl = true;
+                                        wslDetected = true;
+                                    }
                                 }
                             }
-                        }
-                        catch
-                        {
-                            // ignore and continue with parent-process heuristics
+                            catch
+                            {
+                                // ignore and continue with parent-process heuristics
+                            }
                         }
                     }
 

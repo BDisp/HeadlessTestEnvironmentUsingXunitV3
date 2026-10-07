@@ -77,7 +77,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                 // Unix-like (Linux/macOS) share logic: headless when running under a test host and diagnostics flag is present
                 bool isHeadlessExpected = !isAttachedToDebugger && runningUnderTestHost && runningDiagnostic;
 
-                if (isHeadlessExpected && TestHostHelper.DetectedTestHost != "WSL")
+                if (isHeadlessExpected && TestHostHelper.DetectedTestHost != "Unknown" && TestHostHelper.IsWsl)
                 {
                     // Under the test host we expect a headless environment: Init falls back to DefaultSize
                     Assert.Equal(consoleDriver.DefaultSize, new Size(consoleDriver.Width, consoleDriver.Height));
