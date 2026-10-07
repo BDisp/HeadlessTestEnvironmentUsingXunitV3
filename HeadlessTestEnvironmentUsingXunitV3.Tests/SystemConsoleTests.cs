@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace HeadlessTestEnvironmentUsingXunitV3.Tests
 {
@@ -25,7 +24,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                         !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"));
 
             // Platform-aware expectations: Linux and macOS share behavior; Windows may differ.
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 // Windows: decide expected exception based on command-line indicators, debugger, ReSharper, and CI
                 bool expectException;
@@ -75,6 +74,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
             {
                 // Non-Windows platforms (Linux, macOS, etc.) share the same logic
                 bool expectException = TestHostHelper.DetectedTestHost != "VS Code (TERM_PROGRAM)" &&
+                                       TestHostHelper.DetectedTestHost != "WSL" &&
                                        (runningUnderDiagnostic || runningUnderDotnetTestPipe ||
                                         runningUnderReSharper);
                 Console.WriteLine($"expectException: {expectException}");
@@ -89,8 +89,9 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                 else
                 {
                     Assert.Null(exception);
-                    if ((isAttachedToDebugger && !runningUnderReSharper)
-                        || TestHostHelper.DetectedTestHost == "VS Code (TERM_PROGRAM)" && !runningUnderDotnetTestPipe)
+                    if ((isAttachedToDebugger && !runningUnderReSharper && TestHostHelper.DetectedTestHost != "WSL")
+                        || (TestHostHelper.DetectedTestHost == "VS Code (TERM_PROGRAM)" &&
+                            TestHostHelper.DetectedTestHost != "WSL" && !runningUnderDotnetTestPipe))
                     {
                         Assert.False(Console.IsOutputRedirected);
                         Assert.False(Console.IsErrorRedirected);
@@ -100,7 +101,8 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                     {
                         Assert.True(Console.IsOutputRedirected);
                         Assert.True(Console.IsErrorRedirected);
-                        if (runningUnderDotnetTestPipe && !isCi)
+                        if ((runningUnderDotnetTestPipe && !isCi) ||
+                            (!isAttachedToDebugger && TestHostHelper.DetectedTestHost == "WSL"))
                         {
                             Assert.False(Console.IsInputRedirected);
                         }

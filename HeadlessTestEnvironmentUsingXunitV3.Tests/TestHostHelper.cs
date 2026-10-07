@@ -1,10 +1,9 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
+using System.Text;
 #if WINDOWS
 using System.Management;
 #endif
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace HeadlessTestEnvironmentUsingXunitV3.Tests
 {
@@ -41,6 +40,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
             CommandLine = Environment.CommandLine;
             Console.WriteLine("Command line: " + CommandLine);
             DetectedTestHost = DetectTestHost();
+            // DetectedTestHost contains WSL when appropriate
             Console.WriteLine("Detected Test Host: " + DetectedTestHost);
 
             // Also persist the same diagnostics to files so any test host can be inspected.
@@ -107,6 +107,75 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                         return "VS Code (TERM_PROGRAM)";
                     }
 
+                    // Robust WSL detection when running on Linux
+                    if (OperatingSystem.IsLinux())
+                    {
+                        // 1) Environment variables commonly present in WSL
+                        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WSL_DISTRO_NAME")) ||
+                            !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WSL_INTEROP")) ||
+                            !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WSLENV")))
+                        {
+                            return "WSL";
+                        }
+
+                        // 2) Kernel/version files containing 'microsoft'
+                        try
+                        {
+                            const string procVersionPath = "/proc/version";
+                            if (File.Exists(procVersionPath))
+                            {
+                                string ver = File.ReadAllText(procVersionPath);
+                                if (!string.IsNullOrEmpty(ver) &&
+                                    ver.IndexOf("microsoft", StringComparison.OrdinalIgnoreCase) >= 0)
+                                {
+                                    return "WSL";
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // ignore and continue additional checks
+                        }
+
+                        try
+                        {
+                            const string osReleasePath = "/proc/sys/kernel/osrelease";
+                            if (File.Exists(osReleasePath))
+                            {
+                                string osrel = File.ReadAllText(osReleasePath);
+                                if (!string.IsNullOrEmpty(osrel) &&
+                                    osrel.IndexOf("microsoft", StringComparison.OrdinalIgnoreCase) >= 0)
+                                {
+                                    return "WSL";
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // ignore and continue additional checks
+                        }
+
+                        // 3) Mount info references to WSL
+                        try
+                        {
+                            const string mountInfoPath = "/proc/self/mountinfo";
+                            if (File.Exists(mountInfoPath))
+                            {
+                                string mountInfo = File.ReadAllText(mountInfoPath);
+                                if (!string.IsNullOrEmpty(mountInfo) &&
+                                    (mountInfo.IndexOf("wsl", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                     mountInfo.IndexOf("\\\\wsl$", StringComparison.OrdinalIgnoreCase) >= 0))
+                                {
+                                    return "WSL";
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // ignore and continue with parent-process heuristics
+                        }
+                    }
+
                     // Walk parent process chain and inspect command lines on each platform
                     int pid = Environment.ProcessId;
                     while (true)
@@ -114,7 +183,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                         int parentId;
 
 #if WINDOWS
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        if (OperatingSystem.IsWindows())
                         {
                             try
                             {
@@ -132,7 +201,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                             }
                         }
 #endif
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                        if (OperatingSystem.IsLinux())
                         {
                             try
                             {
@@ -162,7 +231,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                                 break;
                             }
                         }
-                        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                        else if (OperatingSystem.IsMacOS())
                         {
                             // macOS: use ps to get parent pid
                             parentId = RunPsGetParent(pid);
@@ -184,7 +253,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                         string? cmd = null;
                         try
                         {
-                            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                            if (OperatingSystem.IsWindows())
                             {
                                 try
                                 {
@@ -196,7 +265,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                                     cmd = null;
                                 }
                             }
-                            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                            else if (OperatingSystem.IsLinux())
                             {
                                 string cmdPath = $"/proc/{parentId}/cmdline";
                                 if (File.Exists(cmdPath))
@@ -209,7 +278,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                                     cmd = RunPsGetCommand(parentId);
                                 }
                             }
-                            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                            else if (OperatingSystem.IsMacOS())
                             {
                                 cmd = RunPsGetCommand(parentId);
                             }
@@ -222,6 +291,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                         if (!string.IsNullOrEmpty(cmd))
                         {
                             string pname = Path.GetFileName(cmd).ToLowerInvariant();
+
                             if (pname.Contains("devenv") || pname.Contains("visual"))
                             {
                                 return "Visual Studio";
