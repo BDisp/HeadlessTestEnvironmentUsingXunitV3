@@ -9,7 +9,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
 {
     public static class TestHostHelper
     {
-        public static bool RunOnce;
+        public static bool IsInitialized;
         public static string? ProcessExe { get; private set; }
         public static string? AssemblyLocation { get; private set; }
         public static string? EntryAssembly { get; private set; }
@@ -21,12 +21,12 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
 
         public static void Initialize()
         {
-            if (RunOnce)
+            if (IsInitialized)
             {
                 return;
             }
 
-            RunOnce = true;
+            IsInitialized = true;
             // Print runtime diagnostics so you can compare Test Explorer / dotnet test vs F5 runs
             ProcessExe = Process.GetCurrentProcess().MainModule?.FileName;
             Console.WriteLine("Process exe: " + ProcessExe);
