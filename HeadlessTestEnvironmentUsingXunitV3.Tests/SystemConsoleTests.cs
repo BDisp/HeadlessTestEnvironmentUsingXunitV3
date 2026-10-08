@@ -185,7 +185,14 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                         }
                         Assert.True(Console.IsOutputRedirected);
                         Assert.True(Console.IsErrorRedirected);
-                        Assert.False(Console.IsInputRedirected);
+                        if (isCi)
+                        {
+                            Assert.True(Console.IsInputRedirected);
+                        }
+                        else
+                        {
+                            Assert.False(Console.IsInputRedirected);
+                        }
                     }
                     else if (runningUnderReSharper)
                     {
@@ -297,7 +304,14 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
 
                         Assert.True(Console.IsOutputRedirected);
                         Assert.True(Console.IsErrorRedirected);
-                        Assert.False(Console.IsInputRedirected);
+                        if (isCi)
+                        {
+                            Assert.True(Console.IsInputRedirected);
+                        }
+                        else
+                        {
+                            Assert.False(Console.IsInputRedirected);
+                        }
                     }
                     else if (runningUnderReSharper)
                     {
