@@ -81,13 +81,6 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                         Assert.NotNull(exception);
                         Assert.True(Console.IsOutputRedirected);
                         Assert.True(Console.IsErrorRedirected);
-                        Assert.False(Console.IsInputRedirected);
-                    }
-                    else if (runningUnderReSharper)
-                    {
-                        Assert.NotNull(exception);
-                        Assert.True(Console.IsOutputRedirected);
-                        Assert.True(Console.IsErrorRedirected);
                         if (isCi)
                         {
                             Assert.True(Console.IsInputRedirected);
@@ -96,6 +89,12 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                         {
                             Assert.False(Console.IsInputRedirected);
                         }
+                    }
+                    else if (runningUnderReSharper)
+                    {
+                        Assert.NotNull(exception);
+                        Assert.True(Console.IsOutputRedirected);
+                        Assert.True(Console.IsErrorRedirected);
                     }
                     else if (runningUnderServer)
                     {
