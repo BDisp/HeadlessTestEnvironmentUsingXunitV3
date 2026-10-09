@@ -95,6 +95,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                         Assert.NotNull(exception);
                         Assert.True(Console.IsOutputRedirected);
                         Assert.True(Console.IsErrorRedirected);
+                        Assert.True(Console.IsInputRedirected);
                     }
                     else if (runningUnderServer)
                     {
@@ -147,19 +148,21 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                         Assert.True(Console.IsOutputRedirected);
                         Assert.True(Console.IsErrorRedirected);
                     }
-                    else if (runningUnderServer && TestHostHelper.DetectedTestHost == "Unknown" && TestHostHelper.IsWsl)
-                    {
-                        Assert.Null(exception);
-                        Assert.True(Console.IsOutputRedirected);
-                        Assert.True(Console.IsErrorRedirected);
-                        Assert.True(Console.IsInputRedirected);
-                    }
                     else if (runningUnderServer)
                     {
                         Assert.Null(exception);
-                        Assert.False(Console.IsOutputRedirected);
-                        Assert.False(Console.IsErrorRedirected);
-                        Assert.False(Console.IsInputRedirected);
+                        if (TestHostHelper.DetectedTestHost == "Unknown" && TestHostHelper.IsWsl)
+                        {
+                            Assert.True(Console.IsOutputRedirected);
+                            Assert.True(Console.IsErrorRedirected);
+                            Assert.True(Console.IsInputRedirected);
+                        }
+                        else
+                        {
+                            Assert.False(Console.IsOutputRedirected);
+                            Assert.False(Console.IsErrorRedirected);
+                            Assert.False(Console.IsInputRedirected);
+                        }
                     }
                     else
                     {
@@ -207,16 +210,14 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                         Assert.True(Console.IsErrorRedirected);
                         Assert.True(Console.IsInputRedirected);
                     }
-                    else if (runningUnderServer && TestHostHelper.DetectedTestHost == "Unknown" && TestHostHelper.IsWsl)
-                    {
-                        Assert.Null(exception);
-                        Assert.True(Console.IsOutputRedirected);
-                        Assert.True(Console.IsErrorRedirected);
-                        Assert.False(Console.IsInputRedirected);
-                    }
                     else if (runningUnderServer)
                     {
-                        if (TestHostHelper.DetectedTestHost == "VS Code")
+                        if (TestHostHelper.DetectedTestHost == "Unknown" && TestHostHelper.IsWsl)
+                        {
+                            Assert.Null(exception);
+                            Assert.False(Console.IsInputRedirected);
+                        }
+                        else if(TestHostHelper.DetectedTestHost == "VS Code")
                         {
                             Assert.Null(exception);
                             Assert.True(Console.IsInputRedirected);
