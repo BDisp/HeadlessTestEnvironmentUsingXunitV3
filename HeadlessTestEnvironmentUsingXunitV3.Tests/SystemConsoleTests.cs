@@ -50,7 +50,7 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
                         Assert.NotNull(exception);
                         Assert.True(Console.IsOutputRedirected);
                         Assert.True(Console.IsErrorRedirected);
-                        if (TestHostHelper.DetectedTestHost == "VS Code (VSCODE_PID)" && !TestHostHelper.IsWsl)
+                        if (TestHostHelper.DetectedTestHost == "VS Code (VSCODE_PID)")
                         {
                             Assert.True(Console.IsOutputRedirected);
                         }
