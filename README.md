@@ -78,3 +78,88 @@ Summary
 Treat test execution environments as headless by default: do not rely on Console.WindowWidth/Height or interactive input in tests. Detect redirection with Console.IsOutputRedirected and fall back to defaults. Use AppDomain BaseDirectory or temp to store diagnostics. When you need to detect IDE/runner, combine environment-variable checks with parent-process inspection; the TestHostHelper in this repository provides an example.
 
 If you want a shorter checklist or a sample snippet to detect hosts, see the TestHostHelper class in the test project.
+
+Platform vs test-host behavior table
+-----------------------------------
+
+<table>
+	<caption><strong>AttachedToDebugger</strong> (debugger / interactive terminal)</caption>
+  <thead>
+	<tr>
+	  <th>OS</th>
+	  <th>Command / runner</th>
+	  <th>WindowWidth Exception</th>
+	  <th>IsOutputRedirected</th>
+	  <th>IsErrorRedirected</th>
+	  <th>IsInputRedirected</th>
+	  <th>Observation</th>
+	</tr>
+  </thead>
+  <tbody>
+	<tr><td>Windows</td><td>--dotnet-test-pipe</td><td>null</td><td>false</td><td>false</td><td>false</td><td></td></tr>
+	<tr><td>Windows</td><td>ReSharperTestRunner.dll</td><td>not null</td><td>true</td><td>true</td><td>false</td><td></td></tr>
+	<tr><td>Windows</td><td>ReSharperTestRunner.dll</td><td>not null</td><td>true</td><td>true</td><td>true</td><td>VS Code (VSCODE_PID)</td></tr>
+	<tr><td>Windows</td><td>--server</td><td>null</td><td>false</td><td>false</td><td>false</td><td></td></tr>
+	<tr><td>Windows</td><td>dotnet run/F5/Ctrl+F5</td><td>null</td><td>false</td><td>false</td><td>false</td><td></td></tr>
+	<tr><td>Linux</td><td>--dotnet-test-pipe</td><td>null</td><td>false</td><td>false</td><td>false</td><td></td></tr>
+	<tr><td>Linux</td><td>ReSharperTestRunner.dll</td><td>not null</td><td>true</td><td>true</td><td>false</td><td></td></tr>
+	<tr><td>Linux</td><td>ReSharperTestRunner.dll</td><td>null</td><td>true</td><td>true</td><td>true</td><td>VS Code</td></tr>
+	<tr><td>Linux</td><td>--server</td><td>null</td><td>false</td><td>false</td><td>false</td><td></td></tr>
+	<tr><td>Linux</td><td>--server</td><td>null</td><td>true</td><td>true</td><td>true</td><td>Unknown & IsWsl</td></tr>
+	<tr><td>Linux</td><td>dotnet run/F5/Ctrl+F5</td><td>null</td><td>false</td><td>false</td><td>false</td><td></td></tr>
+	<tr><td>macOS</td><td>--dotnet-test-pipe</td><td>null</td><td>false</td><td>false</td><td>false</td><td></td></tr>
+	<tr><td>macOS</td><td>ReSharperTestRunner.dll</td><td>not null</td><td>true</td><td>true</td><td>false</td><td></td></tr>
+	<tr><td>macOS</td><td>ReSharperTestRunner.dll</td><td>null</td><td>true</td><td>true</td><td>true</td><td>VS Code (VSCODE_PID)</td></tr>
+	<tr><td>macOS</td><td>--server</td><td>null</td><td>false</td><td>false</td><td>false</td><td></td></tr>
+	<tr><td>macOS</td><td>dotnet run/F5/Ctrl+F5</td><td>null</td><td>false</td><td>false</td><td>false</td><td></td></tr>
+	<tr><td>Others</td><td></td><td>null</td><td>false</td><td>false</td><td>false</td><td>Values may vary</td></tr>
+</tbody>
+</table>
+
+<table>
+	<caption><strong>Not AttachedToDebugger</strong> (headless / test-host)</caption>
+  <thead>
+	<tr>
+	  <th>OS</th>
+	  <th>Command / runner</th>
+	  <th>WindowWidth Exception</th>
+	  <th>IsOutputRedirected</th>
+	  <th>IsErrorRedirected</th>
+	  <th>IsInputRedirected</th>
+	  <th>Observation</th>
+	</tr>
+  </thead>
+  <tbody>
+	<tr><td>Windows</td><td>--dotnet-test-pipe</td><td>not null</td><td>true</td><td>true</td><td>false</td><td></td></tr>
+	<tr><td>Windows</td><td>--dotnet-test-pipe</td><td>not null</td><td>true</td><td>true</td><td>true</td><td>isCi</td></tr>
+	<tr><td>Windows</td><td>ReSharperTestRunner.dll</td><td>not null</td><td>true</td><td>true</td><td>true</td><td></td></tr>
+	<tr><td>Windows</td><td>--server</td><td>not null</td><td>true</td><td>true</td><td>false</td><td></td></tr>
+	<tr><td>Windows</td><td>--server</td><td>null</td><td>false</td><td>false</td><td>false</td><td>VS Code (VSCODE_PID)</td></tr>
+	<tr><td>Windows</td><td>dotnet run/F5/Ctrl+F5</td><td>null</td><td>false</td><td>false</td><td>false</td><td></td></tr>
+	<tr><td>Linux</td><td>--dotnet-test-pipe</td><td>not null</td><td>true</td><td>true</td><td>false</td><td></td></tr>
+	<tr><td>Linux</td><td>--dotnet-test-pipe</td><td>null</td><td>true</td><td>true</td><td>false</td><td>Unknown | VS Code (TERM_PROGRAM)</td></tr>
+	<tr><td>Linux</td><td>--dotnet-test-pipe</td><td>not null</td><td>true</td><td>true</td><td>true</td><td>isCi</td></tr>
+	<tr><td>Linux</td><td>ReSharperTestRunner.dll</td><td>not null</td><td>true</td><td>true</td><td>true</td><td></td></tr>
+	<tr><td>Linux</td><td>ReSharperTestRunner.dll</td><td>null</td><td>true</td><td>true</td><td>true</td><td>VS Code</td></tr>
+	<tr><td>Linux</td><td>--server</td><td>not null</td><td>true</td><td>true</td><td>false</td><td></td></tr>
+	<tr><td>Linux</td><td>--server</td><td>null</td><td>true</td><td>true</td><td>true</td><td>Unknown & IsWsl</td></tr>
+	<tr><td>Linux</td><td>--server</td><td>null</td><td>true</td><td>true</td><td>true</td><td>VS Code</td></tr>
+	<tr><td>Linux</td><td>dotnet run/F5/Ctrl+F5</td><td>null</td><td>false</td><td>false</td><td>false</td><td></td></tr>
+	<tr><td>macOS</td><td>--dotnet-test-pipe</td><td>not null</td><td>true</td><td>true</td><td>false</td><td></td></tr>
+	<tr><td>macOS</td><td>--dotnet-test-pipe</td><td>null</td><td>true</td><td>true</td><td>false</td><td>Unknown | VS Code (TERM_PROGRAM)</td></tr>
+	<tr><td>macOS</td><td>--dotnet-test-pipe</td><td>not null</td><td>true</td><td>true</td><td>true</td><td>isCi</td></tr>
+	<tr><td>macOS</td><td>ReSharperTestRunner.dll</td><td>not null</td><td>true</td><td>true</td><td>true</td><td></td></tr>
+	<tr><td>macOS</td><td>ReSharperTestRunner.dll</td><td>null</td><td>true</td><td>true</td><td>true</td><td>VS Code (VSCODE_PID)</td></tr>
+	<tr><td>macOS</td><td>--server</td><td>not null</td><td>true</td><td>true</td><td>false</td><td></td></tr>
+	<tr><td>macOS</td><td>--server</td><td>null</td><td>true</td><td>true</td><td>true</td><td>VS Code (VSCODE_PID)</td></tr>
+	<tr><td>macOS</td><td>dotnet run/F5/Ctrl+F5</td><td>null</td><td>false</td><td>false</td><td>false</td><td></td></tr>
+	<tr><td>Others</td><td></td><td>null</td><td>false</td><td>false</td><td>false</td><td>Values may vary</td></tr>
+  </tbody>
+</table>
+
+Notes:
+- The first table (AttachedToDebugger) reflects expectation when a debugger or interactive terminal is present (no exception accessing WindowWidth/Height and streams not redirected).
+- The second table (Not AttachedToDebugger) reflects typical headless/test-host behavior: Console.WindowWidth may throw (tests should guard) and streams are commonly redirected.
+- In both tables, use the Observation cell only for explicit conditional signals (e.g., VS Code variables, IsWsl, isCi); leave generic/else cases blank.
+- Use Console.IsOutputRedirected / Console.IsErrorRedirected / Console.IsInputRedirected to detect redirected streams at runtime and fall back to defaults for window size.
+
