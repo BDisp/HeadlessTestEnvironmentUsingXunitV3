@@ -5,14 +5,6 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
 {
     public class ConsoleDriverTests
     {
-        public ConsoleDriverTests()
-        {
-            if (!TestHostHelper.IsInitialized)
-            {
-                TestHostHelper.Initialize();
-            }
-        }
-
         [Fact]
         public void ConsoleDriver_Should_Return_DefaultSize_OnHeadlessTestEnvironment()
         {

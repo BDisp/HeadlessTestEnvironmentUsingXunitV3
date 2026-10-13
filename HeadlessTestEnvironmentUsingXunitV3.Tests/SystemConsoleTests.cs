@@ -4,14 +4,6 @@ namespace HeadlessTestEnvironmentUsingXunitV3.Tests
 {
     public class SystemConsoleTests
     {
-        public SystemConsoleTests()
-        {
-            if (!TestHostHelper.IsInitialized)
-            {
-                TestHostHelper.Initialize();
-            }
-        }
-
         [Fact]
         public void SystemConsole_WindowWidth_Behavior_OnHeadlessTestEnvironment()
         {
